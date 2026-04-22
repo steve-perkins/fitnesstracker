@@ -36,6 +36,8 @@ import {
   Search as SearchIcon,
 } from '@mui/icons-material';
 import { foodsApi } from '../api/foods';
+import { exercisesApi } from '../api/exercises';
+import { weightsApi } from '../api/weights';
 import { useDate } from '../context/DateContext';
 import DateSelector from '../components/DateSelector';
 import {
@@ -45,7 +47,7 @@ import {
   SERVING_TYPE_LABELS,
   CreateFoodDto,
 } from '../types';
-import { calculateAllNutrition, formatNumber } from '../utils/calculations';
+import { calculateAllNutrition, calculateExerciseCalories, formatNumber } from '../utils/calculations';
 
 export default function FoodPage() {
   const queryClient = useQueryClient();
@@ -79,6 +81,18 @@ export default function FoodPage() {
     queryKey: ['foods-eaten', dateString],
     queryFn: () => foodsApi.getEaten({ date: dateString }),
   });
+
+  const { data: exercisesPerformed = [] } = useQuery({
+    queryKey: ['exercises-performed', dateString],
+    queryFn: () => exercisesApi.getPerformed({ date: dateString }),
+  });
+
+  const { data: weightOnDate } = useQuery({
+    queryKey: ['weight', dateString],
+    queryFn: () => weightsApi.getOnDate(dateString),
+  });
+
+  const currentWeight = weightOnDate?.pounds || 150;
 
   const { data: recentFoods = [] } = useQuery({
     queryKey: ['recent-foods'],
@@ -235,6 +249,11 @@ export default function FoodPage() {
     { calories: 0, fat: 0, saturatedFat: 0, carbs: 0, fiber: 0, sugar: 0, protein: 0, sodium: 0 }
   );
 
+  const totalCaloriesBurned = exercisesPerformed.reduce(
+    (sum, ep) => sum + calculateExerciseCalories(ep, currentWeight),
+    0
+  );
+
   return (
     <Box>
       <Typography variant="h4" gutterBottom>
@@ -387,7 +406,9 @@ export default function FoodPage() {
                     <TableCell align="right">
                       <strong>{formatNumber(totals.protein)}</strong>
                     </TableCell>
-                    <TableCell />
+                    <TableCell align="center">
+                      <strong>{Math.round(totals.calories - totalCaloriesBurned)} net cal.</strong>
+                    </TableCell>
                   </TableRow>
                 </TableBody>
               </Table>
