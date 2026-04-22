@@ -6,14 +6,17 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Enable CORS for frontend development
+  // Enable CORS for frontend
   app.enableCors({
     origin: [
       'http://localhost:5173',
+      'http://localhost:5174',
+      'http://localhost:5175',
       'http://localhost:3001',
       'http://localhost:3000',
       'http://localhost:8080', // Python http.server for testing
       'null', // Allow local file:// testing
+      'https://fitness.steveperkins.com', // Production frontend
     ],
     credentials: true,
   });
@@ -27,32 +30,34 @@ async function bootstrap() {
     }),
   );
 
-  // Configure Swagger/OpenAPI documentation
-  const config = new DocumentBuilder()
-    .setTitle('Fitness Tracker API')
-    .setDescription(
-      'REST API for fitness tracking with foods, exercises, weights, and reports',
-    )
-    .setVersion('1.0')
-    .addBearerAuth(
-      { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
-      'JWT-auth',
-    )
-    .addServer('http://localhost:3000', 'Local development')
-    .addTag('auth', 'Authentication endpoints (Google OAuth + Dev Token)')
-    .addTag('users', 'User profile management')
-    .addTag('weights', 'Weight tracking')
-    .addTag('foods', 'Food management and food diary')
-    .addTag('exercises', 'Exercise management and exercise diary')
-    .addTag('reports', 'Daily report entries with calories and weight')
-    .build();
+  // Configure Swagger/OpenAPI documentation (development only)
+  if (process.env.NODE_ENV !== 'production') {
+    const config = new DocumentBuilder()
+      .setTitle('Fitness Tracker API')
+      .setDescription(
+        'REST API for fitness tracking with foods, exercises, weights, and reports',
+      )
+      .setVersion('1.0')
+      .addBearerAuth(
+        { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
+        'JWT-auth',
+      )
+      .addServer('http://localhost:3000', 'Local development')
+      .addTag('auth', 'Authentication endpoints (Google OAuth + Dev Token)')
+      .addTag('users', 'User profile management')
+      .addTag('weights', 'Weight tracking')
+      .addTag('foods', 'Food management and food diary')
+      .addTag('exercises', 'Exercise management and exercise diary')
+      .addTag('reports', 'Daily report entries with calories and weight')
+      .build();
 
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, document, {
-    swaggerOptions: {
-      persistAuthorization: true, // Remember JWT token in browser
-    },
-  });
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('api/docs', app, document, {
+      swaggerOptions: {
+        persistAuthorization: true, // Remember JWT token in browser
+      },
+    });
+  }
 
   const port = process.env.PORT || 3000;
   await app.listen(port);
