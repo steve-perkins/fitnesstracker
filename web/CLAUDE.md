@@ -89,8 +89,13 @@ Location: `src/context/DateContext.tsx`
 ## PWA Configuration
 
 - Manifest: `public/manifest.json`
-- Icons: `public/pwa-192x192.png`, `public/pwa-512x512.png`
-- Service worker registered in `index.html`
+- Icons: `public/icons/icon-192.png`, `public/icons/icon-512.png`
+- Service worker: `public/sw.js`, registered in `index.html`
+
+**Important**: `manifest.json` and `sw.js` must have 644 permissions (world-readable) or nginx will return 403 in production. Git doesn't track permission changes, so if these files get restrictive permissions (600), fix with:
+```bash
+chmod 644 public/manifest.json public/sw.js
+```
 
 ## Docker Build
 

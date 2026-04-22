@@ -168,6 +168,17 @@ docker compose up -d fitnesstracker-api
 
 ## Troubleshooting
 
+### PWA manifest returns 403
+
+If `manifest.json` or `sw.js` return 403 errors in production, the files likely have restrictive permissions (600 instead of 644). This can happen silently since Git doesn't track permission changes for files it already knows about.
+
+Fix locally before rebuilding:
+```bash
+chmod 644 web/public/manifest.json web/public/sw.js
+```
+
+Then rebuild and redeploy the frontend image.
+
 ### Container won't start
 
 ```bash
