@@ -109,10 +109,17 @@ export default function ProfilePage() {
 
   const weightMutation = useMutation({
     mutationFn: async (pounds: number) => {
-      // If weight exists for this date, update it; otherwise create new
-      if (weightOnDate) {
+      // Check if weight exists for THIS EXACT date (not just on-or-before)
+      const selectedDateStr = dateString.split('T')[0];  // "2026-04-22"
+      const weightDateStr = weightOnDate?.date
+        ? new Date(weightOnDate.date).toISOString().split('T')[0]
+        : null;
+
+      if (weightOnDate && weightDateStr === selectedDateStr) {
+        // Weight exists for this exact date - update it
         return weightsApi.update(weightOnDate.id, { pounds });
       } else {
+        // No weight for this exact date - create new
         return weightsApi.create({ date: dateString, pounds });
       }
     },

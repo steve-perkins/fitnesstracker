@@ -31,7 +31,6 @@ import {
   SelectChangeEvent,
 } from '@mui/material';
 import {
-  Edit as EditIcon,
   Delete as DeleteIcon,
   Add as AddIcon,
   Search as SearchIcon,
@@ -728,11 +727,6 @@ function FoodEatenRow({ foodEaten, onUpdate, onDelete, onEditFood }: FoodEatenRo
       <TableCell align="right">{formatNumber(nutrition.sugar)}</TableCell>
       <TableCell align="right">{formatNumber(nutrition.protein)}</TableCell>
       <TableCell align="center">
-        <Tooltip title="Edit Food">
-          <IconButton size="small" onClick={() => onEditFood(foodEaten.food)}>
-            <EditIcon fontSize="small" />
-          </IconButton>
-        </Tooltip>
         <Tooltip title="Delete">
           <IconButton size="small" onClick={() => onDelete(foodEaten.id)} color="error">
             <DeleteIcon fontSize="small" />

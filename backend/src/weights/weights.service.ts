@@ -58,7 +58,9 @@ export class WeightsService {
     userId: string,
     createWeightDto: CreateWeightDto,
   ): Promise<Weight> {
-    const date = new Date(createWeightDto.date);
+    // Extract just the date portion (YYYY-MM-DD) to avoid timezone issues
+    const dateStr = createWeightDto.date.split('T')[0];
+    const date = new Date(dateStr + 'T00:00:00.000Z');
 
     // Check if weight already exists for this date
     const existing = await this.findByUserAndDate(userId, date);

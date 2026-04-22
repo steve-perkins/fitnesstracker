@@ -6,6 +6,7 @@ import { ReportEntry } from '../../src/entities/report-entry.entity';
 import { Weight } from '../../src/entities/weight.entity';
 import { FoodEaten } from '../../src/entities/food-eaten.entity';
 import { ExercisePerformed } from '../../src/entities/exercise-performed.entity';
+import { ServingType } from '../../src/common/enums/serving-type.enum';
 import { TestDataFactory } from './helpers/test-data.factory';
 import {
   createTestDataSource,
@@ -123,7 +124,7 @@ describe('ReportEntriesService (Integration)', () => {
       const food = await factory.createCustomFood(user, {
         name: 'Test Food',
         calories: 500,
-        defaultServingType: 1, // OUNCE
+        defaultServingType: ServingType.OUNCE,
         servingTypeQty: 1,
       });
 
@@ -134,7 +135,7 @@ describe('ReportEntriesService (Integration)', () => {
           user,
           food,
           date: today,
-          servingType: 1, // OUNCE
+          servingType: ServingType.OUNCE,
           servingQty: 2,
         }),
       );

@@ -8,7 +8,7 @@ import {
 } from 'typeorm';
 import { User } from './user.entity';
 import { Food } from './food.entity';
-import { ServingType } from '../common/enums/serving-type.enum';
+import { ServingType, SERVING_TYPE_OUNCES } from '../common/enums/serving-type.enum';
 
 @Entity('foods_eaten')
 @Unique(['user', 'food', 'date'])
@@ -66,10 +66,9 @@ export class FoodEaten {
       ratio = this.servingQty / this.food.servingTypeQty;
     } else {
       // Serving type needs conversion through ounces
-      // Each ServingType enum value represents its ounce equivalent
-      const ouncesInThisServingType = this.servingType as number; // enum numeric value
-      const ouncesInDefaultServingType = this.food
-        .defaultServingType as number; // enum numeric value
+      // Look up ounce equivalents from SERVING_TYPE_OUNCES
+      const ouncesInThisServingType = SERVING_TYPE_OUNCES[this.servingType];
+      const ouncesInDefaultServingType = SERVING_TYPE_OUNCES[this.food.defaultServingType];
       const denominator =
         ouncesInDefaultServingType * this.food.servingTypeQty;
 
