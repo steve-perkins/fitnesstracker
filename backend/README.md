@@ -48,31 +48,19 @@ Update the following variables:
 
 ## Running the Application
 
-### Option 1: Local Development (with existing PostgreSQL)
-
-Ensure Phase 1 PostgreSQL is running:
+Start local PostgreSQL (from the repo root):
 
 ```bash
-cd ../migration
-docker-compose -f docker-compose.postgres.yml up -d
-cd ../backend
+docker compose -f scripts/docker-compose.postgres.yml up -d
 ```
 
-Start the application:
+Then start the application:
 
 ```bash
 npm run start:dev
 ```
 
-The API will be available at `http://localhost:3000`.
-
-### Option 2: Docker Compose (full stack)
-
-```bash
-docker-compose up -d
-```
-
-This will start both PostgreSQL and the NestJS backend.
+TypeORM migrations run automatically on boot and create the schema on a fresh database. The API will be available at `http://localhost:3000`.
 
 ## API Endpoints
 

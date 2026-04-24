@@ -1,0 +1,26 @@
+# Local development PostgreSQL instance.
+# Usage: docker compose -f scripts/docker-compose.postgres.yml up -d
+# Schema is created automatically by TypeORM migrations on first app boot.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: fitness-postgres-dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: fitness_tracker
+      POSTGRES_USER: fitness_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-fitness_dev_password}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fitness_user -d fitness_tracker"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+    driver: local

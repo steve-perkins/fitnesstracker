@@ -12,6 +12,7 @@ export const getDatabaseConfig = (
   database: configService.get('DB_DATABASE'),
   entities: [__dirname + '/../**/*.entity{.ts,.js}'],
   migrations: [__dirname + '/../migrations/*{.ts,.js}'],
+  migrationsRun: true,
   synchronize: false, // NEVER true in production
   logging: configService.get('NODE_ENV') === 'development',
   extra: {

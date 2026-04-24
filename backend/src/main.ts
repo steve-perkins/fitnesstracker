@@ -7,19 +7,19 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   // Enable CORS for frontend
-  app.enableCors({
-    origin: [
-      'http://localhost:5173',
-      'http://localhost:5174',
-      'http://localhost:5175',
-      'http://localhost:3001',
-      'http://localhost:3000',
-      'http://localhost:8080', // Python http.server for testing
-      'null', // Allow local file:// testing
-      'https://fitness.steveperkins.com', // Production frontend
-    ],
-    credentials: true,
-  });
+  const corsOrigins: string[] = [
+    'http://localhost:5173',
+    'http://localhost:5174',
+    'http://localhost:5175',
+    'http://localhost:3001',
+    'http://localhost:3000',
+    'http://localhost:8080', // Python http.server for testing
+    'null', // Allow local file:// testing
+  ];
+  if (process.env.FRONTEND_URL) {
+    corsOrigins.push(process.env.FRONTEND_URL);
+  }
+  app.enableCors({ origin: corsOrigins, credentials: true });
 
   // Enable global validation pipes
   app.useGlobalPipes(

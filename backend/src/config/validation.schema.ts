@@ -17,4 +17,6 @@ export const validationSchema = Joi.object({
   JWT_EXPIRATION: Joi.string().default('7d'),
 
   GOOGLE_CLIENT_ID: Joi.string().required(),
+
+  FRONTEND_URL: Joi.string().uri().optional(),
 });
