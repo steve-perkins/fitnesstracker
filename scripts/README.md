@@ -34,9 +34,14 @@ The Python scripts load `.env` automatically via `python-dotenv`, so no manual `
 
 ---
 
-## deploy.py — Build and push Docker images
+## deploy.py — Build and push Docker images (manual option)
 
-Builds the backend API and web frontend Docker images and pushes them to the private registry. Run this from the repo root before deploying a new version to the server.
+Builds the backend API and web frontend Docker images and pushes them to the private registry.
+
+Deployment can be triggered two ways:
+
+- **CI pipeline (preferred):** merging a PR to `main` runs lint and all tests, then presents a human-approval gate in GitHub Actions. Approving it builds and pushes both images automatically using secrets stored in the repository. See `.github/workflows/ci.yml`.
+- **This script (manual fallback):** run locally from the repo root when you need to deploy outside of the normal PR flow, or before the CI pipeline was set up.
 
 ```bash
 python3 scripts/deploy.py

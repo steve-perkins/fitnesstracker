@@ -1,15 +1,6 @@
-# Fitness Tracker Backend - Phase 2: NestJS Backend Core
+# Fitness Tracker Backend
 
-NestJS backend application for the Fitness Tracker modernization project.
-
-## Status: Phase 2 Complete ✅
-
-- ✅ NestJS app with TypeORM connected to PostgreSQL
-- ✅ 7 TypeORM entities mapped to existing Phase 1 tables
-- ✅ TypeORM migrations system configured with baseline
-- ✅ Google OAuth + JWT authentication working
-- ✅ Basic endpoints: POST /auth/google, GET /users/me
-- ✅ Docker Compose for local development
+NestJS backend application for the Fitness Tracker project.
 
 ## Tech Stack
 
@@ -25,7 +16,6 @@ NestJS backend application for the Fitness Tracker modernization project.
 
 - Node.js 20.x or later
 - PostgreSQL 16 (or use Docker Compose)
-- Phase 1 database migration completed
 
 ## Installation
 
@@ -78,9 +68,35 @@ TypeORM migrations run automatically on boot and create the schema on a fresh da
   - Header: `Authorization: Bearer <jwt>`
   - Returns user profile data
 
+## Authentication
+
+The frontend obtains a short-lived identity token from Google OAuth, then exchanges it with the backend via `POST /auth/google`. The backend verifies the Google token and issues its own 7-day JWT, which the frontend includes as a `Bearer` token on all subsequent API requests.
+
+### Dev-token endpoint
+
+For development and testing, the backend exposes an additional endpoint that issues a JWT without requiring a real Google identity token. It is automatically disabled (`401 Unauthorized`) when `NODE_ENV=production`.
+
+```bash
+# Generate a token for a user that exists in the database
+curl -s -X POST http://localhost:3000/auth/dev-token \
+  -H "Content-Type: application/json" \
+  -d '{"email": "you@example.com"}' \
+  | jq -r '.access_token'
+
+# Save it for subsequent requests
+export JWT=$(curl -s -X POST http://localhost:3000/auth/dev-token \
+  -H "Content-Type: application/json" \
+  -d '{"email": "you@example.com"}' \
+  | jq -r '.access_token')
+
+curl -H "Authorization: Bearer $JWT" http://localhost:3000/users/me
+```
+
+The E2E test suite uses this endpoint to authenticate programmatically without Google credentials.
+
 ## Database Schema
 
-The application connects to the Phase 1 PostgreSQL database with the following tables:
+The application connects to the PostgreSQL database with the following tables:
 
 - `users` - User profiles
 - `foods` - Food items (global and user-owned)
@@ -186,22 +202,6 @@ src/
     └── 1700000000000-InitialSchema.ts
 ```
 
-## Known Issues / TODO
-
-- TypeORM migration:run requires dotenv package (to be addressed in Phase 3)
-- Google OAuth testing requires valid GOOGLE_CLIENT_ID
-- Unit and integration tests to be written in Phase 3
-
-## Next Steps (Phase 3)
-
-Phase 3 will implement the core business logic:
-
-1. Users module - Profile operations
-2. Weights module - CRUD operations
-3. Foods module - Search, visibility logic, CRUD
-4. Exercises module - Search, CRUD
-5. Reports module - Synchronous report_data updates
-
 ## Development Notes
 
 ### Building
@@ -223,11 +223,3 @@ npm run lint
 ```bash
 npm run format
 ```
-
-## Contributing
-
-This is the modernization of a legacy Spring Boot application. See the main project plan at `/Users/steve/.claude/plans/buzzing-roaming-barto.md` for the full migration strategy.
-
-## License
-
-ISC

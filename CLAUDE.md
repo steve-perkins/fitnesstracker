@@ -69,7 +69,7 @@ Docker Compose with:
 - Nginx container serving React static build
 - Traefik reverse proxy with automatic Let's Encrypt SSL
 
-See `docs/DEPLOYMENT.md` for build and deployment instructions.
+See `scripts/README.md` and `.github/worklows/ci.yml` for build and deployment instructions.
 
 ## Future Work
 
