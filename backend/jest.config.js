@@ -1,4 +1,5 @@
 module.exports = {
+  testTimeout: 60000,
   projects: [
     {
       displayName: 'unit',
@@ -19,14 +20,13 @@ module.exports = {
       testMatch: ['<rootDir>/test/integration/**/*.int.ts'],
       testEnvironment: 'node',
       preset: 'ts-jest',
-      timeout: 30000,
     },
     {
       displayName: 'e2e',
       testMatch: ['<rootDir>/test/e2e/**/*.e2e-spec.ts'],
       testEnvironment: 'node',
       preset: 'ts-jest',
-      timeout: 60000,
+      setupFiles: ['<rootDir>/test/e2e/setup.ts'],
     },
   ],
 };

@@ -203,7 +203,7 @@ describe('App E2E Tests', () => {
         .set('Authorization', `Bearer ${jwtToken}`)
         .send({
           name: 'Custom Protein Shake',
-          defaultServingType: 1, // OUNCE
+          defaultServingType: 'OUNCE',
           servingTypeQty: 16,
           calories: 200,
           fat: 3,
@@ -229,7 +229,7 @@ describe('App E2E Tests', () => {
         .send({
           foodId,
           date: today.toISOString(),
-          servingType: 1, // OUNCE
+          servingType: 'OUNCE',
           servingQty: 16,
         })
         .expect(201);

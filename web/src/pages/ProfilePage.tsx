@@ -71,6 +71,7 @@ export default function ProfilePage() {
   // Initialize form when profile loads
   useEffect(() => {
     if (profile) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFormData({
         firstName: profile.firstName,
         lastName: profile.lastName,
@@ -86,6 +87,7 @@ export default function ProfilePage() {
   // Initialize weight input when weight data loads
   useEffect(() => {
     if (weightOnDate) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setWeightInput(weightOnDate.pounds.toString());
     } else {
       setWeightInput('');

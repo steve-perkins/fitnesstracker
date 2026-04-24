@@ -5,7 +5,7 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository, InjectDataSource } from '@nestjs/typeorm';
-import { Repository, DataSource, IsNull } from 'typeorm';
+import { Repository, DataSource } from 'typeorm';
 import { Food } from '../entities/food.entity';
 import { FoodEaten } from '../entities/food-eaten.entity';
 import { ReportEntriesService } from '../report-entries/report-entries.service';

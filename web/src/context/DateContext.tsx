@@ -42,6 +42,7 @@ export function DateProvider({ children }: DateProviderProps) {
   return <DateContext.Provider value={value}>{children}</DateContext.Provider>;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useDate() {
   const context = useContext(DateContext);
   if (context === undefined) {

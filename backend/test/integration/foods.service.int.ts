@@ -14,7 +14,7 @@ import {
   destroyTestDataSource,
 } from './helpers/test-database.helper';
 import { ServingType } from '../../src/common/enums/serving-type.enum';
-import { ConflictException, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { ConflictException, NotFoundException } from '@nestjs/common';
 
 describe('FoodsService (Integration)', () => {
   let dataSource: DataSource;

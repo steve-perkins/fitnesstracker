@@ -95,7 +95,7 @@ export interface CreateFoodDto {
   sodium: number;
 }
 
-export interface UpdateFoodDto extends Partial<CreateFoodDto> {}
+export type UpdateFoodDto = Partial<CreateFoodDto>;
 
 export interface FoodEaten {
   id: string;

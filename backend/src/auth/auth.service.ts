@@ -60,7 +60,7 @@ export class AuthService {
           lastName: user.lastName,
         },
       };
-    } catch (error) {
+    } catch {
       throw new UnauthorizedException('Invalid Google token');
     }
   }

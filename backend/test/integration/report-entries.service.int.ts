@@ -120,7 +120,6 @@ describe('ReportEntriesService (Integration)', () => {
       );
 
       // Create a food with known calories
-      const foodRepo = dataSource.getRepository(Weight);
       const food = await factory.createCustomFood(user, {
         name: 'Test Food',
         calories: 500,

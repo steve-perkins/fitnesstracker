@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import { DataSource } from 'typeorm';
 import { newDb } from 'pg-mem';
 import { User } from '../../../src/entities/user.entity';
@@ -21,7 +22,7 @@ export async function createTestDataSource(): Promise<DataSource> {
   db.public.registerFunction({
     name: 'uuid_generate_v4',
     returns: db.public.getType('uuid' as any),
-    implementation: () => require('crypto').randomUUID(),
+    implementation: () => crypto.randomUUID(),
     impure: true,
   });
 
@@ -41,32 +42,35 @@ export async function createTestDataSource(): Promise<DataSource> {
   });
 
   // Register pg_trgm extension for fuzzy text search
+  const trgmSimilarity = (a: string, b: string): number => {
+    if (!a || !b) return 0;
+    const aLower = a.toLowerCase();
+    const bLower = b.toLowerCase();
+    if (aLower === bLower) return 1.0;
+    if (aLower.includes(bLower) || bLower.includes(aLower)) return 0.5;
+    const bWords = bLower.split(/\s+/);
+    const aWords = aLower.split(/\s+/);
+    for (const bWord of bWords) {
+      for (const aWord of aWords) {
+        if (aWord.startsWith(bWord) || bWord.startsWith(aWord)) return 0.4;
+      }
+    }
+    return 0;
+  };
+
   db.public.registerFunction({
     name: 'similarity',
     args: [db.public.getType('text' as any), db.public.getType('text' as any)],
     returns: db.public.getType('float' as any),
-    implementation: (a: string, b: string) => {
-      if (!a || !b) return 0;
-      const aLower = a.toLowerCase();
-      const bLower = b.toLowerCase();
+    implementation: trgmSimilarity,
+  });
 
-      // Simple similarity: exact match = 1.0, contains = 0.5, else 0
-      if (aLower === bLower) return 1.0;
-      if (aLower.includes(bLower) || bLower.includes(aLower)) return 0.5;
-
-      // Check for word starts (e.g., "chick" matches "Chicken Breast")
-      const bWords = bLower.split(/\s+/);
-      const aWords = aLower.split(/\s+/);
-      for (const bWord of bWords) {
-        for (const aWord of aWords) {
-          if (aWord.startsWith(bWord) || bWord.startsWith(aWord)) {
-            return 0.4;
-          }
-        }
-      }
-
-      return 0;
-    },
+  // word_similarity(query, text): best matching word-subset similarity
+  db.public.registerFunction({
+    name: 'word_similarity',
+    args: [db.public.getType('text' as any), db.public.getType('text' as any)],
+    returns: db.public.getType('float' as any),
+    implementation: trgmSimilarity,
   });
 
   // Create TypeORM DataSource
