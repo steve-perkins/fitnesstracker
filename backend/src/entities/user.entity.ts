@@ -88,4 +88,7 @@ export class User {
 
   @OneToMany('ExercisePerformed', 'user')
   exercisesPerformed: Promise<any[]>;
+
+  @OneToMany('Step', 'user')
+  steps: Promise<any[]>;
 }

@@ -68,6 +68,7 @@ export class ReportEntriesController {
       date: entry.date,
       pounds: entry.pounds,
       netCalories: entry.netCalories,
+      steps: entry.steps,
     }));
   }
 }

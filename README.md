@@ -18,7 +18,7 @@ This is a modernized port of [fitnessjiffy-spring](https://github.com/steve-perk
 ## Features
 
 - Food diary with full nutritional tracking (calories, fat, carbs, fiber, sugar, protein, sodium)
-- Exercise log with MET-based calorie-burn calculations
+- Exercise log with MET-based calorie-burn calculations and daily step counts
 - Weight tracking with historical charts
 - Daily report summaries with 30-day moving averages
 - Fuzzy search for foods and exercises

@@ -8,13 +8,13 @@ import {
 } from 'typeorm';
 import { User } from './user.entity';
 
-@Entity('report_entries')
+@Entity('steps')
 @Unique(['user', 'date'])
-export class ReportEntry {
+export class Step {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ManyToOne(() => User)
+  @ManyToOne(() => User, (user) => user.steps)
   @JoinColumn({ name: 'user_id' })
   user: User;
 
@@ -34,12 +34,6 @@ export class ReportEntry {
   })
   date: Date;
 
-  @Column({ type: 'float' })
-  pounds: number;
-
-  @Column({ type: 'int', name: 'net_calories' })
-  netCalories: number;
-
-  @Column({ type: 'int', default: 0 })
-  steps: number;
+  @Column({ type: 'int' })
+  count: number;
 }

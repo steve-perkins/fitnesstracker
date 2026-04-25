@@ -29,6 +29,7 @@ src/
 ├── auth/              # Google OAuth + JWT authentication
 ├── users/             # User profile management
 ├── weights/           # Weight tracking
+├── steps/             # Steps tracking
 ├── foods/             # Food CRUD + food diary (foods_eaten)
 ├── exercises/         # Exercise CRUD + exercise log (exercises_performed)
 ├── report-entries/    # Daily report summaries (auto-calculated)
@@ -46,6 +47,7 @@ src/
 - `Exercise` → `exercises`
 - `ExercisePerformed` → `exercises_performed`
 - `Weight` → `weights`
+- `Steps` → `steps`
 - `ReportEntry` → `report_entries`
 
 ## Key Business Logic

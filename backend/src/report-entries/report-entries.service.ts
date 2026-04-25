@@ -11,6 +11,7 @@ import { ReportEntry } from '../entities/report-entry.entity';
 import { Weight } from '../entities/weight.entity';
 import { FoodEaten } from '../entities/food-eaten.entity';
 import { ExercisePerformed } from '../entities/exercise-performed.entity';
+import { Step } from '../entities/step.entity';
 
 @Injectable()
 export class ReportEntriesService {
@@ -23,6 +24,8 @@ export class ReportEntriesService {
     private foodEatenRepository: Repository<FoodEaten>,
     @InjectRepository(ExercisePerformed)
     private exercisePerformedRepository: Repository<ExercisePerformed>,
+    @InjectRepository(Step)
+    private stepRepository: Repository<Step>,
     @InjectDataSource()
     private dataSource: DataSource,
   ) {}
@@ -133,7 +136,16 @@ export class ReportEntriesService {
           netCalories -= exercisePerformed.getCaloriesBurned(weight.pounds);
         }
 
-        // 4. Create or update report entry
+        // 4. Look up step count for this date (0 if no record)
+        const step = await runner.manager.findOne(Step, {
+          where: {
+            user: { id: userId },
+            date: currentDate,
+          },
+        });
+        const steps = step?.count ?? 0;
+
+        // 5. Create or update report entry
         let reportEntry = await runner.manager.findOne(ReportEntry, {
           where: {
             user: { id: userId },
@@ -148,11 +160,13 @@ export class ReportEntriesService {
             date: new Date(currentDate),
             pounds: weight.pounds,
             netCalories,
+            steps,
           });
         } else {
           // Update existing entry
           reportEntry.pounds = weight.pounds;
           reportEntry.netCalories = netCalories;
+          reportEntry.steps = steps;
         }
 
         await runner.manager.save(ReportEntry, reportEntry);

@@ -5,6 +5,7 @@ import { ExercisesService } from '../../src/exercises/exercises.service';
 import { Exercise } from '../../src/entities/exercise.entity';
 import { ExercisePerformed } from '../../src/entities/exercise-performed.entity';
 import { Weight } from '../../src/entities/weight.entity';
+import { Step } from '../../src/entities/step.entity';
 import { ReportEntry } from '../../src/entities/report-entry.entity';
 import { FoodEaten } from '../../src/entities/food-eaten.entity';
 import { ReportEntriesService } from '../../src/report-entries/report-entries.service';
@@ -47,6 +48,10 @@ describe('ExercisesService (Integration)', () => {
         {
           provide: getRepositoryToken(FoodEaten),
           useValue: dataSource.getRepository(FoodEaten),
+        },
+        {
+          provide: getRepositoryToken(Step),
+          useValue: dataSource.getRepository(Step),
         },
         {
           provide: DataSource,

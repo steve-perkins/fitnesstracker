@@ -178,28 +178,14 @@ src/
 │   └── guards/             # Guards (JwtAuthGuard)
 │
 ├── entities/               # TypeORM entities
-│   ├── user.entity.ts
-│   ├── food.entity.ts
-│   ├── food-eaten.entity.ts
-│   ├── exercise.entity.ts
-│   ├── exercise-performed.entity.ts
-│   ├── weight.entity.ts
-│   └── report-entry.entity.ts
 │
 ├── auth/                   # Authentication module
-│   ├── auth.module.ts
-│   ├── auth.controller.ts
-│   ├── auth.service.ts
 │   ├── strategies/         # Passport strategies
 │   └── dto/                # Data Transfer Objects
 │
 ├── users/                  # Users module
-│   ├── users.module.ts
-│   ├── users.controller.ts
-│   └── users.service.ts
 │
 └── migrations/             # TypeORM migrations
-    └── 1700000000000-InitialSchema.ts
 ```
 
 ## Development Notes

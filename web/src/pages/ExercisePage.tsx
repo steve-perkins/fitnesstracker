@@ -37,6 +37,7 @@ import {
 } from '@mui/icons-material';
 import { exercisesApi } from '../api/exercises';
 import { weightsApi } from '../api/weights';
+import { stepsApi } from '../api/steps';
 import { useDate } from '../context/DateContext';
 import DateSelector from '../components/DateSelector';
 import { Exercise, ExercisePerformed } from '../types';
@@ -81,6 +82,11 @@ export default function ExercisePage() {
     queryFn: () => weightsApi.getOnDate(dateString),
   });
 
+  const { data: stepsOnDate, isLoading: stepsLoading } = useQuery({
+    queryKey: ['steps', dateString],
+    queryFn: () => stepsApi.getOnDate(dateString),
+  });
+
   const currentWeight = weightOnDate?.pounds || 150;
 
   // Mutations
@@ -106,6 +112,25 @@ export default function ExercisePage() {
     mutationFn: exercisesApi.deletePerformed,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['exercises-performed'] });
+      queryClient.invalidateQueries({ queryKey: ['report-entries'] });
+    },
+  });
+
+  const stepsMutation = useMutation({
+    mutationFn: async (count: number) => {
+      const selectedDateStr = dateString.split('T')[0];
+      const stepDateStr = stepsOnDate?.date
+        ? new Date(stepsOnDate.date).toISOString().split('T')[0]
+        : null;
+
+      if (stepsOnDate && stepDateStr === selectedDateStr) {
+        return stepsApi.update(stepsOnDate.id, { count });
+      } else {
+        return stepsApi.create({ date: dateString, count });
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['steps'] });
       queryClient.invalidateQueries({ queryKey: ['report-entries'] });
     },
   });
@@ -175,15 +200,27 @@ export default function ExercisePage() {
         Exercise
       </Typography>
 
-      {/* Date Selector */}
-      <Card sx={{ mb: 3 }}>
-        <CardContent>
-          <DateSelector />
-          <Typography variant="subtitle1" color="text.secondary">
-            Tracking exercise for {displayDate}
-          </Typography>
-        </CardContent>
-      </Card>
+      {/* Date Selector and Steps — side-by-side on sm+, stacked on mobile */}
+      <Grid container spacing={2} sx={{ mb: 3 }}>
+        <Grid item xs={12} sm={6}>
+          <Card sx={{ height: '100%' }}>
+            <CardContent>
+              <DateSelector />
+              <Typography variant="subtitle1" color="text.secondary">
+                Tracking exercise for {displayDate}
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <StepsCard
+            key={`${dateString}-${stepsOnDate?.id ?? 'none'}`}
+            initialCount={stepsOnDate?.count}
+            onSave={(count) => stepsMutation.mutate(count)}
+            isLoading={stepsMutation.isPending || stepsLoading}
+          />
+        </Grid>
+      </Grid>
 
       {/* Add Exercise Section */}
       <Card sx={{ mb: 3 }}>
@@ -391,6 +428,55 @@ export default function ExercisePage() {
         </DialogActions>
       </Dialog>
     </Box>
+  );
+}
+
+interface StepsCardProps {
+  initialCount: number | undefined;
+  onSave: (count: number) => void;
+  isLoading: boolean;
+}
+
+function StepsCard({ initialCount, onSave, isLoading }: StepsCardProps) {
+  const [count, setCount] = useState((initialCount ?? 0).toString());
+
+  const handleSave = () => {
+    const num = parseInt(count);
+    if (!isNaN(num) && num >= 0) onSave(num);
+  };
+
+  return (
+    <Card sx={{ height: '100%' }}>
+      <CardContent>
+        <Typography variant="h6" gutterBottom>
+          Record Steps
+        </Typography>
+        <Grid container spacing={2} alignItems="center">
+          <Grid item xs={8}>
+            <TextField
+              fullWidth
+              type="number"
+              label="Steps"
+              value={count}
+              onChange={(e) => setCount(e.target.value)}
+              inputProps={{ step: '1', min: '0', max: '1000000' }}
+              disabled={isLoading}
+              size="small"
+            />
+          </Grid>
+          <Grid item xs={4}>
+            <Button
+              variant="contained"
+              onClick={handleSave}
+              disabled={isLoading}
+              fullWidth
+            >
+              {isLoading ? 'Saving...' : 'Save'}
+            </Button>
+          </Grid>
+        </Grid>
+      </CardContent>
+    </Card>
   );
 }
 

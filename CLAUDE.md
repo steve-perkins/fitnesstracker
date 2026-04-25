@@ -39,6 +39,7 @@ See `backend/CLAUDE.md` and `web/CLAUDE.md` for directory-specific commands and 
 - `exercises` - Exercise definitions with MET values
 - `exercises_performed` - Daily exercise log
 - `weights` - Weight measurements
+- `steps` - Step counts
 - `report_entries` - Denormalized daily summaries (auto-updated)
 
 ## Authentication Flow

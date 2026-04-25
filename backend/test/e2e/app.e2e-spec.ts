@@ -67,6 +67,7 @@ describe('App E2E Tests', () => {
       .from('exercises_performed')
       .execute();
     await dataSource.createQueryBuilder().delete().from('foods_eaten').execute();
+    await dataSource.createQueryBuilder().delete().from('steps').execute();
     await dataSource.createQueryBuilder().delete().from('weights').execute();
   });
 
@@ -183,6 +184,105 @@ describe('App E2E Tests', () => {
         .expect(200);
 
       expect(afterDeleteResponse.body.length).toBe(0);
+    });
+  });
+
+  describe('Steps CRUD Workflow', () => {
+    beforeEach(async () => {
+      const authResponse = await request(app.getHttpServer())
+        .post('/auth/dev-token')
+        .send({ email: 'test@example.com' })
+        .expect(200);
+
+      jwtToken = authResponse.body.access_token;
+    });
+
+    it('should create, read, update, and delete step entry', async () => {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      // CREATE
+      const createResponse = await request(app.getHttpServer())
+        .post('/steps')
+        .set('Authorization', `Bearer ${jwtToken}`)
+        .send({
+          date: today.toISOString(),
+          count: 8000,
+        })
+        .expect(201);
+
+      expect(createResponse.body.count).toBe(8000);
+      const stepId = createResponse.body.id;
+
+      // READ (list all)
+      const readResponse = await request(app.getHttpServer())
+        .get('/steps')
+        .set('Authorization', `Bearer ${jwtToken}`)
+        .expect(200);
+
+      expect(readResponse.body.length).toBe(1);
+      expect(readResponse.body[0].count).toBe(8000);
+
+      // READ (on-date — exact match)
+      const onDateResponse = await request(app.getHttpServer())
+        .get(`/steps/on-date?date=${today.toISOString()}`)
+        .set('Authorization', `Bearer ${jwtToken}`)
+        .expect(200);
+
+      expect(onDateResponse.body.count).toBe(8000);
+
+      // UPDATE
+      const updateResponse = await request(app.getHttpServer())
+        .patch(`/steps/${stepId}`)
+        .set('Authorization', `Bearer ${jwtToken}`)
+        .send({ count: 12000 })
+        .expect(200);
+
+      expect(updateResponse.body.count).toBe(12000);
+
+      // DELETE
+      await request(app.getHttpServer())
+        .delete(`/steps/${stepId}`)
+        .set('Authorization', `Bearer ${jwtToken}`)
+        .expect(200);
+
+      // Verify deletion
+      const afterDeleteResponse = await request(app.getHttpServer())
+        .get('/steps')
+        .set('Authorization', `Bearer ${jwtToken}`)
+        .expect(200);
+
+      expect(afterDeleteResponse.body.length).toBe(0);
+    });
+
+    it('should return empty body for on-date when no step entry exists', async () => {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const response = await request(app.getHttpServer())
+        .get(`/steps/on-date?date=${today.toISOString()}`)
+        .set('Authorization', `Bearer ${jwtToken}`)
+        .expect(200);
+
+      // NestJS serializes null as an empty body; supertest parses that as {}
+      expect(response.body.id).toBeUndefined();
+    });
+
+    it('should return 409 when creating duplicate step entry for same date', async () => {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      await request(app.getHttpServer())
+        .post('/steps')
+        .set('Authorization', `Bearer ${jwtToken}`)
+        .send({ date: today.toISOString(), count: 8000 })
+        .expect(201);
+
+      await request(app.getHttpServer())
+        .post('/steps')
+        .set('Authorization', `Bearer ${jwtToken}`)
+        .send({ date: today.toISOString(), count: 9000 })
+        .expect(409);
     });
   });
 
@@ -390,6 +490,37 @@ describe('App E2E Tests', () => {
       // Net calories should be defined (can be positive or negative depending on food vs exercise)
       expect(mostRecentReport.netCalories).toBeDefined();
       expect(typeof mostRecentReport.netCalories).toBe('number');
+      // Steps should be present (0 since we didn't log any)
+      expect(mostRecentReport.steps).toBe(0);
+    });
+
+    it('should include step count in report entry when steps are logged', async () => {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      // 1. Create weight (required for report entry creation)
+      await request(app.getHttpServer())
+        .post('/weights')
+        .set('Authorization', `Bearer ${jwtToken}`)
+        .send({ date: today.toISOString(), pounds: 180 })
+        .expect(201);
+
+      // 2. Log steps
+      await request(app.getHttpServer())
+        .post('/steps')
+        .set('Authorization', `Bearer ${jwtToken}`)
+        .send({ date: today.toISOString(), count: 9500 })
+        .expect(201);
+
+      // 3. Verify report entry includes steps
+      const reportResponse = await request(app.getHttpServer())
+        .get(`/report-entries?startDate=${today.toISOString()}&endDate=${today.toISOString()}`)
+        .set('Authorization', `Bearer ${jwtToken}`)
+        .expect(200);
+
+      expect(reportResponse.body.length).toBeGreaterThan(0);
+      const report = reportResponse.body[0];
+      expect(report.steps).toBe(9500);
     });
   });
 

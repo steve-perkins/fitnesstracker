@@ -8,6 +8,7 @@ import { getDatabaseConfig } from './config/database.config';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { WeightsModule } from './weights/weights.module';
+import { StepsModule } from './steps/steps.module';
 import { ReportEntriesModule } from './report-entries/report-entries.module';
 import { FoodsModule } from './foods/foods.module';
 import { ExercisesModule } from './exercises/exercises.module';
@@ -27,6 +28,7 @@ import { ExercisesModule } from './exercises/exercises.module';
     AuthModule,
     UsersModule,
     WeightsModule,
+    StepsModule,
     ReportEntriesModule,
     FoodsModule,
     ExercisesModule,
