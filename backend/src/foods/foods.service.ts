@@ -261,6 +261,7 @@ export class FoodsService {
         date,
       },
       relations: ['food'],
+      order: { food: { name: 'ASC' } },
     });
   }
 
@@ -278,8 +279,8 @@ export class FoodsService {
       .where('"foodEaten"."user_id" = :userId', { userId })
       .andWhere('foodEaten.date >= :startDate', { startDate })
       .andWhere('foodEaten.date <= :endDate', { endDate })
-      .orderBy('foodEaten.date', 'DESC')
-      .addOrderBy('food.name', 'ASC')
+      .orderBy('food.name', 'ASC')
+      .addOrderBy('foodEaten.date', 'DESC')
       .getMany();
   }
 

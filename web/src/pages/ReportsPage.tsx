@@ -34,19 +34,19 @@ type DataType = 'weight' | 'netCalories' | 'weight30avg' | 'calories30avg' | 'st
 
 const DATA_TYPE_LABELS: Record<DataType, string> = {
   weight: 'Weight (lbs)',
-  weight30avg: 'Weight 30-day Moving Avg',
   netCalories: 'Net Calories per Day',
-  calories30avg: 'Calories 30-day Moving Avg',
   steps: 'Steps per Day',
+  weight30avg: 'Weight 30-day Moving Avg',
+  calories30avg: 'Calories 30-day Moving Avg',
   steps30avg: 'Steps 30-day Moving Avg',
 };
 
 const DATA_TYPE_COLORS: Record<DataType, string> = {
   weight: '#FF6600',
-  weight30avg: '#2196F3',
   netCalories: '#FCD202',
-  calories30avg: '#4CAF50',
   steps: '#9C27B0',
+  weight30avg: '#2196F3',
+  calories30avg: '#4CAF50',
   steps30avg: '#E91E63',
 };
 
