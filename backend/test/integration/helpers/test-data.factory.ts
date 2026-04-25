@@ -1,6 +1,7 @@
 import { DataSource } from 'typeorm';
 import { User } from '../../../src/entities/user.entity';
 import { Weight } from '../../../src/entities/weight.entity';
+import { Step } from '../../../src/entities/step.entity';
 import { Food } from '../../../src/entities/food.entity';
 import { FoodEaten } from '../../../src/entities/food-eaten.entity';
 import { Exercise } from '../../../src/entities/exercise.entity';
@@ -75,6 +76,39 @@ export class TestDataFactory {
     }
 
     return weights;
+  }
+
+  /**
+   * Create step entries for a user going back N days from today.
+   *
+   * @param user - User entity
+   * @param daysBack - Number of days of step history to create
+   * @param avgSteps - Average steps per day (default 8000)
+   */
+  async createStepHistory(
+    user: User,
+    daysBack: number = 30,
+    avgSteps: number = 8000,
+  ): Promise<Step[]> {
+    const stepRepo = this.dataSource.getRepository(Step);
+    const steps: Step[] = [];
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    for (let i = 0; i < daysBack; i++) {
+      const date = new Date(today);
+      date.setDate(date.getDate() - i);
+
+      // Simulate realistic daily variation (±2000 steps)
+      const variation = Math.sin(i / 3) * 2000;
+      const count = Math.max(0, Math.round(avgSteps + variation));
+
+      const step = stepRepo.create({ user, date, count });
+      steps.push(await stepRepo.save(step));
+    }
+
+    return steps;
   }
 
   /**
@@ -330,6 +364,7 @@ export class TestDataFactory {
   async createCompleteUserProfile(daysBack: number = 30): Promise<{
     user: User;
     weights: Weight[];
+    steps: Step[];
     foods: Food[];
     foodsEaten: FoodEaten[];
     exercises: Exercise[];
@@ -337,6 +372,7 @@ export class TestDataFactory {
   }> {
     const user = await this.createUser();
     const weights = await this.createWeightHistory(user, daysBack);
+    const steps = await this.createStepHistory(user, daysBack);
     const foods = await this.createGlobalFoods();
     const foodsEaten = await this.createFoodLogs(user, foods, daysBack);
     const exercises = await this.createGlobalExercises();
@@ -345,6 +381,7 @@ export class TestDataFactory {
     return {
       user,
       weights,
+      steps,
       foods,
       foodsEaten,
       exercises,

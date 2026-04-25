@@ -3,6 +3,7 @@ import { DataSource } from 'typeorm';
 import { newDb } from 'pg-mem';
 import { User } from '../../../src/entities/user.entity';
 import { Weight } from '../../../src/entities/weight.entity';
+import { Step } from '../../../src/entities/step.entity';
 import { Food } from '../../../src/entities/food.entity';
 import { FoodEaten } from '../../../src/entities/food-eaten.entity';
 import { Exercise } from '../../../src/entities/exercise.entity';
@@ -79,6 +80,7 @@ export async function createTestDataSource(): Promise<DataSource> {
     entities: [
       User,
       Weight,
+      Step,
       Food,
       FoodEaten,
       Exercise,

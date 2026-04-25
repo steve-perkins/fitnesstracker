@@ -4,6 +4,7 @@ import { ReportEntry } from '../entities/report-entry.entity';
 import { Weight } from '../entities/weight.entity';
 import { FoodEaten } from '../entities/food-eaten.entity';
 import { ExercisePerformed } from '../entities/exercise-performed.entity';
+import { Step } from '../entities/step.entity';
 import { ReportEntriesController } from './report-entries.controller';
 import { ReportEntriesService } from './report-entries.service';
 
@@ -14,6 +15,7 @@ import { ReportEntriesService } from './report-entries.service';
       Weight,
       FoodEaten,
       ExercisePerformed,
+      Step,
     ]),
   ],
   controllers: [ReportEntriesController],

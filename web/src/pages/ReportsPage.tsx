@@ -30,13 +30,15 @@ import { reportsApi } from '../api/reports';
 import { formatNumber } from '../utils/calculations';
 
 type DateRange = 'all' | 'month' | 'year';
-type DataType = 'weight' | 'netCalories' | 'weight30avg' | 'calories30avg';
+type DataType = 'weight' | 'netCalories' | 'weight30avg' | 'calories30avg' | 'steps' | 'steps30avg';
 
 const DATA_TYPE_LABELS: Record<DataType, string> = {
   weight: 'Weight (lbs)',
   netCalories: 'Net Calories per Day',
   weight30avg: 'Weight 30-day Moving Avg',
   calories30avg: 'Calories 30-day Moving Avg',
+  steps: 'Steps per Day',
+  steps30avg: 'Steps 30-day Moving Avg',
 };
 
 const DATA_TYPE_COLORS: Record<DataType, string> = {
@@ -44,6 +46,8 @@ const DATA_TYPE_COLORS: Record<DataType, string> = {
   netCalories: '#FCD202',
   weight30avg: '#2196F3',
   calories30avg: '#4CAF50',
+  steps: '#9C27B0',
+  steps30avg: '#E91E63',
 };
 
 export default function ReportsPage() {
@@ -96,14 +100,18 @@ export default function ReportsPage() {
         window.reduce((sum, e) => sum + e.pounds, 0) / window.length;
       const calories30avg =
         window.reduce((sum, e) => sum + e.netCalories, 0) / window.length;
+      const steps30avg =
+        window.reduce((sum, e) => sum + (e.steps ?? 0), 0) / window.length;
 
       return {
         ...entry,
         date: format(parseISO(entry.date), 'MMM d, yyyy'),
         dateObj: parseISO(entry.date),
         weight: entry.pounds,
+        steps: entry.steps ?? 0,
         weight30avg: window.length >= 7 ? weight30avg : null,
         calories30avg: window.length >= 7 ? calories30avg : null,
+        steps30avg: window.length >= 7 ? steps30avg : null,
       };
     });
   }, [filteredData]);
@@ -116,6 +124,7 @@ export default function ReportsPage() {
 
     const weights = chartData.map((d) => d.weight).filter((w) => w > 0);
     const calories = chartData.map((d) => d.netCalories);
+    const stepsData = chartData.map((d) => d.steps ?? 0);
 
     const startWeight = weights[0] || 0;
     const endWeight = weights[weights.length - 1] || 0;
@@ -136,6 +145,9 @@ export default function ReportsPage() {
     const avgCalories =
       calories.reduce((a, b) => a + b, 0) / calories.length;
 
+    const avgSteps =
+      stepsData.reduce((a, b) => a + b, 0) / stepsData.length;
+
     return {
       startWeight,
       endWeight,
@@ -146,6 +158,7 @@ export default function ReportsPage() {
       weightChangePerWeek,
       weightRange: maxWeight - minWeight,
       avgCalories,
+      avgSteps,
       totalDays: chartData.length,
     };
   }, [chartData]);
@@ -373,7 +386,7 @@ export default function ReportsPage() {
                 </Grid>
               </Grid>
 
-              {/* Calorie Stats */}
+              {/* Calorie and Step Stats */}
               <Grid item xs={12} md={6}>
                 <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1 }}>
                   Calories
@@ -387,6 +400,18 @@ export default function ReportsPage() {
                   </Grid>
                   <Grid item xs={6}>
                     <StatItem label="Total Days Tracked" value={statistics.totalDays.toString()} />
+                  </Grid>
+                </Grid>
+
+                <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mt: 2, mb: 1 }}>
+                  Steps
+                </Typography>
+                <Grid container spacing={1}>
+                  <Grid item xs={6}>
+                    <StatItem
+                      label="Avg Steps/Day"
+                      value={Math.round(statistics.avgSteps).toLocaleString()}
+                    />
                   </Grid>
                 </Grid>
               </Grid>

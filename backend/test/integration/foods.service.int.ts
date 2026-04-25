@@ -7,6 +7,7 @@ import { FoodEaten } from '../../src/entities/food-eaten.entity';
 import { ReportEntry } from '../../src/entities/report-entry.entity';
 import { ReportEntriesService } from '../../src/report-entries/report-entries.service';
 import { Weight } from '../../src/entities/weight.entity';
+import { Step } from '../../src/entities/step.entity';
 import { ExercisePerformed } from '../../src/entities/exercise-performed.entity';
 import { TestDataFactory } from './helpers/test-data.factory';
 import {
@@ -49,6 +50,10 @@ describe('FoodsService (Integration)', () => {
         {
           provide: getRepositoryToken(ExercisePerformed),
           useValue: dataSource.getRepository(ExercisePerformed),
+        },
+        {
+          provide: getRepositoryToken(Step),
+          useValue: dataSource.getRepository(Step),
         },
         {
           provide: DataSource,

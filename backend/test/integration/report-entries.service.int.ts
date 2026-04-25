@@ -4,6 +4,7 @@ import { DataSource } from 'typeorm';
 import { ReportEntriesService } from '../../src/report-entries/report-entries.service';
 import { ReportEntry } from '../../src/entities/report-entry.entity';
 import { Weight } from '../../src/entities/weight.entity';
+import { Step } from '../../src/entities/step.entity';
 import { FoodEaten } from '../../src/entities/food-eaten.entity';
 import { ExercisePerformed } from '../../src/entities/exercise-performed.entity';
 import { ServingType } from '../../src/common/enums/serving-type.enum';
@@ -42,6 +43,10 @@ describe('ReportEntriesService (Integration)', () => {
           useValue: dataSource.getRepository(ExercisePerformed),
         },
         {
+          provide: getRepositoryToken(Step),
+          useValue: dataSource.getRepository(Step),
+        },
+        {
           provide: DataSource,
           useValue: dataSource,
         },
@@ -60,6 +65,7 @@ describe('ReportEntriesService (Integration)', () => {
     await dataSource.createQueryBuilder().delete().from(ReportEntry).execute();
     await dataSource.createQueryBuilder().delete().from(ExercisePerformed).execute();
     await dataSource.createQueryBuilder().delete().from(FoodEaten).execute();
+    await dataSource.createQueryBuilder().delete().from(Step).execute();
     await dataSource.createQueryBuilder().delete().from(Weight).execute();
   });
 
@@ -335,6 +341,79 @@ describe('ReportEntriesService (Integration)', () => {
       // Verify report entry was created
       const reportEntries = await service.findByUserAndDateRange(user.id, today, today);
       expect(reportEntries.length).toBe(1);
+    });
+  });
+
+  describe('updateFromDate - Step Count', () => {
+    it('should include step count in report entry when steps exist', async () => {
+      const user = await factory.createUser();
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const weightRepo = dataSource.getRepository(Weight);
+      await weightRepo.save(
+        weightRepo.create({ user, date: today, pounds: 180 }),
+      );
+
+      const stepRepo = dataSource.getRepository(Step);
+      await stepRepo.save(stepRepo.create({ user, date: today, count: 9500 }));
+
+      await service.updateFromDate(user.id, today);
+
+      const reportEntries = await service.findByUserAndDateRange(user.id, today, today);
+
+      expect(reportEntries.length).toBe(1);
+      expect(reportEntries[0].steps).toBe(9500);
+    });
+
+    it('should set steps to 0 in report entry when no steps recorded', async () => {
+      const user = await factory.createUser();
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const weightRepo = dataSource.getRepository(Weight);
+      await weightRepo.save(
+        weightRepo.create({ user, date: today, pounds: 180 }),
+      );
+
+      await service.updateFromDate(user.id, today);
+
+      const reportEntries = await service.findByUserAndDateRange(user.id, today, today);
+
+      expect(reportEntries.length).toBe(1);
+      expect(reportEntries[0].steps).toBe(0);
+    });
+
+    it('should update report entry steps when step count changes', async () => {
+      const user = await factory.createUser();
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const weightRepo = dataSource.getRepository(Weight);
+      await weightRepo.save(
+        weightRepo.create({ user, date: today, pounds: 180 }),
+      );
+
+      const stepRepo = dataSource.getRepository(Step);
+      const step = await stepRepo.save(
+        stepRepo.create({ user, date: today, count: 5000 }),
+      );
+
+      await service.updateFromDate(user.id, today);
+
+      let reportEntries = await service.findByUserAndDateRange(user.id, today, today);
+      expect(reportEntries[0].steps).toBe(5000);
+
+      step.count = 12000;
+      await stepRepo.save(step);
+
+      await service.updateFromDate(user.id, today);
+
+      reportEntries = await service.findByUserAndDateRange(user.id, today, today);
+      expect(reportEntries[0].steps).toBe(12000);
     });
   });
 

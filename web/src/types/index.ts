@@ -55,6 +55,22 @@ export interface Weight {
   pounds: number;
 }
 
+// Step types
+export interface Step {
+  id: string;
+  date: string;
+  count: number;
+}
+
+export interface CreateStepDto {
+  date: string;
+  count: number;
+}
+
+export interface UpdateStepDto {
+  count: number;
+}
+
 export interface CreateWeightDto {
   date: string;
   pounds: number;
@@ -148,6 +164,7 @@ export interface ReportEntry {
   date: string;
   pounds: number;
   netCalories: number;
+  steps: number;
 }
 
 // Auth types
