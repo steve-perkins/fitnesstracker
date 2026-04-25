@@ -77,6 +77,7 @@ export class ExercisesService {
         date,
       },
       relations: ['exercise'],
+      order: { exercise: { description: 'ASC' } },
     });
   }
 
@@ -94,8 +95,8 @@ export class ExercisesService {
       .where('"exercisePerformed"."user_id" = :userId', { userId })
       .andWhere('exercisePerformed.date >= :startDate', { startDate })
       .andWhere('exercisePerformed.date <= :endDate', { endDate })
-      .orderBy('exercisePerformed.date', 'DESC')
-      .addOrderBy('exercise.description', 'ASC')
+      .orderBy('exercise.description', 'ASC')
+      .addOrderBy('exercisePerformed.date', 'DESC')
       .getMany();
   }
 
