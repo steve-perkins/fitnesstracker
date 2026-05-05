@@ -25,8 +25,9 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
-import { format, parseISO, subMonths, subYears, isAfter } from 'date-fns';
+import { format, subMonths, subYears, isAfter } from 'date-fns';
 import { reportsApi } from '../api/reports';
+import { parseApiDate } from '../utils/dates';
 import { formatNumber } from '../utils/calculations';
 
 type DateRange = 'all' | 'month' | 'year';
@@ -80,12 +81,12 @@ export default function ReportsPage() {
     }
 
     const filtered = startDate
-      ? reportEntries.filter((entry) => isAfter(parseISO(entry.date), startDate!))
+      ? reportEntries.filter((entry) => isAfter(parseApiDate(entry.date), startDate!))
       : reportEntries;
 
     // Sort by date ascending for chart
     return [...filtered].sort(
-      (a, b) => parseISO(a.date).getTime() - parseISO(b.date).getTime()
+      (a, b) => parseApiDate(a.date).getTime() - parseApiDate(b.date).getTime()
     );
   }, [reportEntries, dateRange]);
 
@@ -105,8 +106,8 @@ export default function ReportsPage() {
 
       return {
         ...entry,
-        date: format(parseISO(entry.date), 'MMM d, yyyy'),
-        dateObj: parseISO(entry.date),
+        date: format(parseApiDate(entry.date), 'MMM d, yyyy'),
+        dateObj: parseApiDate(entry.date),
         weight: entry.pounds,
         steps: entry.steps ?? 0,
         weight30avg: window.length >= 7 ? weight30avg : null,

@@ -9,15 +9,17 @@ import {
   Typography,
   Grid,
   FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   Alert,
   CircularProgress,
   Divider,
+  InputLabel,
+  Select,
+  MenuItem,
+  Autocomplete,
   SelectChangeEvent,
 } from '@mui/material';
 import { format } from 'date-fns';
+import { parseApiDate } from '../utils/dates';
 import { usersApi } from '../api/users';
 import { weightsApi } from '../api/weights';
 import { useDate } from '../context/DateContext';
@@ -231,7 +233,7 @@ export default function ProfilePage() {
           </Grid>
           {weightOnDate && (
             <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
-              Last updated: {format(new Date(weightOnDate.date), 'MMMM d, yyyy')}
+              Last updated: {format(parseApiDate(weightOnDate.date), 'MMMM d, yyyy')}
             </Typography>
           )}
         </CardContent>
@@ -362,6 +364,18 @@ export default function ProfilePage() {
                   ))}
                 </Select>
               </FormControl>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <Autocomplete
+                options={Intl.supportedValuesOf('timeZone')}
+                value={formData.timezone || null}
+                onChange={(_, value) =>
+                  setFormData((prev) => ({ ...prev, timezone: value ?? '' }))
+                }
+                renderInput={(params) => (
+                  <TextField {...params} label="Timezone" size="small" fullWidth />
+                )}
+              />
             </Grid>
             <Grid item xs={12}>
               <Button

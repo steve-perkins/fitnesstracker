@@ -12,6 +12,7 @@ import { Weight } from '../entities/weight.entity';
 import { FoodEaten } from '../entities/food-eaten.entity';
 import { ExercisePerformed } from '../entities/exercise-performed.entity';
 import { Step } from '../entities/step.entity';
+import { User } from '../entities/user.entity';
 
 @Injectable()
 export class ReportEntriesService {
@@ -26,9 +27,22 @@ export class ReportEntriesService {
     private exercisePerformedRepository: Repository<ExercisePerformed>,
     @InjectRepository(Step)
     private stepRepository: Repository<Step>,
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
     @InjectDataSource()
     private dataSource: DataSource,
   ) {}
+
+  private todayInUserTimezone(timezone: string): Date {
+    const tz = timezone || 'America/New_York';
+    const ymd = new Intl.DateTimeFormat('en-CA', {
+      timeZone: tz,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).format(new Date());
+    return new Date(ymd + 'T00:00:00.000Z');
+  }
 
   /**
    * Find all report entries for a user, optionally filtered by date range
@@ -84,11 +98,15 @@ export class ReportEntriesService {
     }
 
     try {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
+      const user = await this.userRepository.findOne({ where: { id: userId } });
+      const today = this.todayInUserTimezone(user?.timezone ?? '');
 
-      let currentDate = new Date(startDate);
-      currentDate.setHours(0, 0, 0, 0);
+      // Normalize startDate to UTC midnight — the entity transformer always
+      // produces UTC-midnight dates, so this is defensive against any caller
+      // that might pass a non-midnight Date.
+      let currentDate = new Date(
+        new Date(startDate).toISOString().split('T')[0] + 'T00:00:00.000Z',
+      );
 
       // Loop through each date from startDate to today
       while (currentDate <= today) {
@@ -171,9 +189,8 @@ export class ReportEntriesService {
 
         await runner.manager.save(ReportEntry, reportEntry);
 
-        // Move to next date
-        currentDate = new Date(currentDate);
-        currentDate.setDate(currentDate.getDate() + 1);
+        // Move to next date (24h in ms keeps this in pure UTC, DST-safe)
+        currentDate = new Date(currentDate.getTime() + 24 * 60 * 60 * 1000);
       }
 
       // Commit only if we created the transaction
