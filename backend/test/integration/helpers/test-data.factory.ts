@@ -32,7 +32,7 @@ export class TestDataFactory {
       birthdate: new Date('1990-01-01'),
       heightInInches: 70,
       activityLevel: ActivityLevel.MODERATELY_ACTIVE,
-      timezone: 'America/New_York',
+      timezone: 'UTC',
       ...overrides,
     });
 
