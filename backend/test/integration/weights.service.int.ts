@@ -8,6 +8,7 @@ import { ReportEntry } from '../../src/entities/report-entry.entity';
 import { ReportEntriesService } from '../../src/report-entries/report-entries.service';
 import { FoodEaten } from '../../src/entities/food-eaten.entity';
 import { ExercisePerformed } from '../../src/entities/exercise-performed.entity';
+import { User } from '../../src/entities/user.entity';
 import { TestDataFactory } from './helpers/test-data.factory';
 import {
   createTestDataSource,
@@ -47,6 +48,10 @@ describe('WeightsService (Integration)', () => {
         {
           provide: getRepositoryToken(Step),
           useValue: dataSource.getRepository(Step),
+        },
+        {
+          provide: getRepositoryToken(User),
+          useValue: dataSource.getRepository(User),
         },
         {
           provide: DataSource,

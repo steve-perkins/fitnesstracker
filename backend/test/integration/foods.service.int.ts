@@ -9,6 +9,7 @@ import { ReportEntriesService } from '../../src/report-entries/report-entries.se
 import { Weight } from '../../src/entities/weight.entity';
 import { Step } from '../../src/entities/step.entity';
 import { ExercisePerformed } from '../../src/entities/exercise-performed.entity';
+import { User } from '../../src/entities/user.entity';
 import { TestDataFactory } from './helpers/test-data.factory';
 import {
   createTestDataSource,
@@ -54,6 +55,10 @@ describe('FoodsService (Integration)', () => {
         {
           provide: getRepositoryToken(Step),
           useValue: dataSource.getRepository(Step),
+        },
+        {
+          provide: getRepositoryToken(User),
+          useValue: dataSource.getRepository(User),
         },
         {
           provide: DataSource,
