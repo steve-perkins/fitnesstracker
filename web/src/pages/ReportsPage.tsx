@@ -25,7 +25,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
-import { format, subMonths, subYears, isAfter } from 'date-fns';
+import { format, subMonths, subYears, subDays, isAfter } from 'date-fns';
 import { reportsApi } from '../api/reports';
 import { parseApiDate } from '../utils/dates';
 import { formatNumber } from '../utils/calculations';
@@ -56,44 +56,48 @@ export default function ReportsPage() {
   const [leftAxis, setLeftAxis] = useState<DataType>('weight');
   const [rightAxis, setRightAxis] = useState<DataType>('netCalories');
 
-  // Fetch all report entries
-  const { data: reportEntries = [], isLoading, error } = useQuery({
-    queryKey: ['report-entries'],
-    queryFn: () => reportsApi.getEntries(),
-  });
+  // Compute the fetch window (display range + 30-day lead-in for moving avg seed)
+  // and the display cutoff. Memoized so it doesn't change on every render.
+  const today = useMemo(() => new Date(), []);
 
-  // Filter data by date range
-  const filteredData = useMemo(() => {
-    if (!reportEntries.length) return [];
-
-    let startDate: Date | null = null;
-    const today = new Date();
+  const { fetchStart, fetchEnd, displayStart } = useMemo(() => {
+    const end = new Date(today);
+    end.setHours(23, 59, 59, 999);
 
     switch (dateRange) {
-      case 'month':
-        startDate = subMonths(today, 1);
-        break;
-      case 'year':
-        startDate = subYears(today, 1);
-        break;
+      case 'month': {
+        const ds = subMonths(today, 1);
+        return { fetchStart: subDays(ds, 30), fetchEnd: end, displayStart: ds };
+      }
+      case 'year': {
+        const ds = subYears(today, 1);
+        return { fetchStart: subDays(ds, 30), fetchEnd: end, displayStart: ds };
+      }
       default:
-        startDate = null;
+        return { fetchStart: null, fetchEnd: null, displayStart: null };
     }
+  }, [dateRange, today]);
 
-    const filtered = startDate
-      ? reportEntries.filter((entry) => isAfter(parseApiDate(entry.date), startDate!))
-      : reportEntries;
+  // Fetch report entries — include 30-day lead-in so moving averages are seeded
+  // from real history rather than the start of the display window.
+  const { data: reportEntries = [], isLoading, error } = useQuery({
+    queryKey: ['report-entries', dateRange],
+    queryFn: () =>
+      reportsApi.getEntries(
+        fetchStart && fetchEnd
+          ? { startDate: fetchStart.toISOString(), endDate: fetchEnd.toISOString() }
+          : undefined,
+      ),
+  });
 
-    // Sort by date ascending for chart
-    return [...filtered].sort(
-      (a, b) => parseApiDate(a.date).getTime() - parseApiDate(b.date).getTime()
-    );
-  }, [reportEntries, dateRange]);
-
-  // Calculate 30-day moving averages
+  // Calculate 30-day moving averages over the fetched window, then slice off
+  // the 30-day lead-in so only the user's selected range is displayed.
   const chartData = useMemo(() => {
-    return filteredData.map((entry, index, arr) => {
-      // Get last 30 entries for moving average
+    const sorted = [...reportEntries].sort(
+      (a, b) => parseApiDate(a.date).getTime() - parseApiDate(b.date).getTime(),
+    );
+
+    const withAverages = sorted.map((entry, index, arr) => {
       const start = Math.max(0, index - 29);
       const window = arr.slice(start, index + 1);
 
@@ -115,7 +119,11 @@ export default function ReportsPage() {
         steps30avg: window.length >= 7 ? steps30avg : null,
       };
     });
-  }, [filteredData]);
+
+    return displayStart
+      ? withAverages.filter((row) => isAfter(row.dateObj, displayStart))
+      : withAverages;
+  }, [reportEntries, displayStart]);
 
   // Calculate statistics
   const statistics = useMemo(() => {
@@ -164,21 +172,11 @@ export default function ReportsPage() {
     };
   }, [chartData]);
 
-  // Date range options based on data availability
-  const dateRangeOptions = useMemo(() => {
-    const options: { value: DateRange; label: string }[] = [
-      { value: 'all', label: 'All Dates' },
-    ];
-
-    if (reportEntries.length >= 30) {
-      options.push({ value: 'month', label: 'Most Recent Month' });
-    }
-    if (reportEntries.length >= 365) {
-      options.push({ value: 'year', label: 'Most Recent Year' });
-    }
-
-    return options;
-  }, [reportEntries.length]);
+  const dateRangeOptions: { value: DateRange; label: string }[] = [
+    { value: 'all', label: 'All Dates' },
+    { value: 'month', label: 'Most Recent Month' },
+    { value: 'year', label: 'Most Recent Year' },
+  ];
 
   const handleDateRangeChange = (e: SelectChangeEvent<DateRange>) => {
     setDateRange(e.target.value as DateRange);
